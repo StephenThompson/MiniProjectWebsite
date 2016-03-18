@@ -7,7 +7,7 @@ client.execute("OPEN Colenso");
 // localhost:3000/?path=Hadfield
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  path = req.query.path
+  path = req.query.path;
   if (!path)
     path = ''
 
@@ -19,6 +19,8 @@ router.get('/', function(req, res, next) {
       arrayOfLines = result.result.toString().split("\n");
       filePath = [];
       urlPath = [];
+      breadCrumbs = path.split("/");
+      breadCrumbs.unshift("Home");
       for (x = 0; x < arrayOfLines.length; x++){
 	arrayTest = arrayOfLines[x].replace(path, "").split("/");
 	if (filePath.indexOf(arrayTest[0]) < 0){
@@ -29,7 +31,8 @@ router.get('/', function(req, res, next) {
 	  filePath.push(arrayTest[0]);
 	}
       }
-      res.render('index', { title: 'Colenso Project', files: filePath, urls: urlPath});
+
+      res.render('index', { title: 'Colenso Project', files: filePath, urls: urlPath, crumbs: breadCrumbs});
     }
   });
 });

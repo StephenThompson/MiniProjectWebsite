@@ -3,17 +3,31 @@ extends ../node_modules/jade-bootstrap/_bootstrap
 head
   title=title
 block body
-  +navbar ("Colenso")
+  +navbar ("Colenso","dropdown_menu","inverse")
     +nav_item("/", "active") Home
+    +nav_item("/") Search
     +nav_item("/") Upload
   .container
-    +input-group("","Search")
-      +input-simple("text","txtName","Name","Name")
-  .container    
-    +panel-default("Browse") 
-      ol
+    ol.breadcrumb
       - var n = 0
-        while n < files.length
-          - var link = urls[n];
+      while n < crumbs.length
+        if n < crumbs.length - 2
           li
-            a(href= link ) !{files[n++]}
+            if crumbs[n] == "Home"
+              a(href="/") !{crumbs[n]}  
+            else
+              - var path = "/?path="
+              - var i = 0
+              while i < n
+                - path = path + crumbs[n] + "/"
+                - i++
+              a(href=path) !{crumbs[n]}  
+        else
+            li.active !{crumbs[n]}
+        - n++
+            
+    .list-group
+      - var n = 0
+      while n < files.length
+        - var link = urls[n];
+        a.list-group-item(href= link ) !{files[n++]}
