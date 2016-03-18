@@ -1,0 +1,19 @@
+extends ../node_modules/jade-bootstrap/_bootstrap
+
+head
+  title=title
+block body
+  +navbar ("Colenso")
+    +nav_item("/", "active") Home
+    +nav_item("/") Upload
+  .container
+    +input-group("","Search")
+      +input-simple("text","txtName","Name","Name")
+  .container    
+    +panel-default("Browse") 
+      ol
+      - var n = 0
+        while n < files.length
+          - var link = urls[n];
+          li
+            a(href= link ) !{files[n++]}

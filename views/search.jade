@@ -1,0 +1,15 @@
+extends ../node_modules/jade-bootstrap/_bootstrap
+
+head
+  title=title
+
+block body
+  +navbar ("Colenso")
+    +nav_item("/", "active") Home
+    
+    //+input-group("","%")
+    .span
+      input
+      +icon-btn("search")
+
+  +panel-primary("Search Results")

@@ -1,0 +1,27 @@
+extends ../node_modules/jade-bootstrap/_bootstrap
+
+head
+  title=title
+
+block body
+  +navbar ("Colenso")
+    +nav_item("/", "active") Home
+    
+    //+input-group("","%")
+    .span
+      input
+      icon-btn("search")
+    
+ 
+  .container
+    +tab-list(["Text","UML"],0)
+       +tab("Text","active") 
+         +panel-primary(downloadPath)
+           p !{words}
+       +tab("UML")
+         +panel-primary(downloadPath)
+           textarea#comment.form-control(rows= '20')
+             | #{words}
+    a.btn.btn-group(style='float: right;')
+      a.btn.pull-right Edit
+      a.btn.pull-right(href= "/d="+downloadPath) Download
