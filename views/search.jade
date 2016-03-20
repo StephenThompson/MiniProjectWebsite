@@ -4,12 +4,34 @@ head
   title=title
 
 block body
-  +navbar ("Colenso")
-    +nav_item("/", "active") Home
+  +navbar ("Colenso","dropdown_menu","inverse")
+    +nav_item("/") Home
+    +nav_item("/search/", "active") Search
+    +nav_item("/upload/") Upload
+  
+  .container
+    .panel.panel-default
+      form(id="searchCriteria", action="", method="get")
+       .input-group
+        input.form-control(id="q",name="searchText", placeholder='Search for tag', type="text")
+        span.input-group-btn
+          button.btn.btn-default(type='submit') Search
+  if files.length > 0
+    .container
     
-    //+input-group("","%")
-    .span
-      input
-      +icon-btn("search")
-
-  +panel-primary("Search Results")
+      +panel-primary("Search Results")  
+        .list-group
+          - var n = pageNum
+          - var count = 0
+          while n < files.length && count < resultsPerPage
+            - var link = "/s=" + files[n];
+            a.list-group-item(href= link ) !{files[n++]}
+            - count++
+        ul.pagination
+          - var n = 0
+          - var count = 1
+          while n < files.length
+            li
+              a(href='#') #{count}
+            - count++;
+            - n = n + resultsPerPage;

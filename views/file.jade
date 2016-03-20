@@ -4,13 +4,10 @@ head
   title=title
 
 block body
-  +navbar ("Colenso")
+  +navbar ("Colenso","dropdown_menu","inverse")
     +nav_item("/", "active") Home
-    
-    //+input-group("","%")
-    .span
-      input
-      icon-btn("search")
+    +nav_item("/search/") Search
+    +nav_item("/upload/") Upload
     
  
   .container

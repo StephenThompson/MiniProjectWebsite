@@ -1,0 +1,13 @@
+extends ../node_modules/jade-bootstrap/_bootstrap
+
+head
+  title=title
+
+block body
+  +navbar ("Colenso","dropdown_menu","inverse")
+    +nav_item("/") Home
+    +nav_item("/search/") Search
+    +nav_item("/", "active") Upload
+    
+  .container
+    a.btn.btn-default Upload
