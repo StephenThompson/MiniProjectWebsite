@@ -29,5 +29,4 @@ block body
     .list-group
       - var n = 0
       while n < files.length
-        - var link = urls[n];
-        a.list-group-item(href= link ) !{files[n++]}
+        a.list-group-item(href= urls[n] ) !{files[n++]}

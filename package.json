@@ -16,7 +16,9 @@
     "jade-bootstrap": "*",
     "cheerio": "*",
     "eslint": "*",
-    "basex": "*"
+    "basex": "*",
+	"JSZip": "*",
+	"fs": "*"
   },
   "devDependencies": {
     "eslint-config-standard": "^5.1.0",

@@ -1,37 +1,62 @@
 extends ../node_modules/jade-bootstrap/_bootstrap
 
 head
-  title=title
+	title=title
 
 block body
-  +navbar ("Colenso","dropdown_menu","inverse")
-    +nav_item("/") Home
-    +nav_item("/search/", "active") Search
-    +nav_item("/upload/") Upload
-  
-  .container
-    .panel.panel-default
-      form(id="searchCriteria", action="", method="get")
-       .input-group
-        input.form-control(id="q",name="searchText", placeholder='Search for tag', type="text")
-        span.input-group-btn
-          button.btn.btn-default(type='submit') Search
-  if files.length > 0
-    .container
-    
-      +panel-primary("Search Results")  
-        .list-group
-          - var n = pageNum
-          - var count = 0
-          while n < files.length && count < resultsPerPage
-            - var link = "/s=" + files[n];
-            a.list-group-item(href= link ) !{files[n++]}
-            - count++
-        ul.pagination
-          - var n = 0
-          - var count = 1
-          while n < files.length
-            li
-              a(href='#') #{count}
-            - count++;
-            - n = n + resultsPerPage;
+	+navbar("Colenso","dropdown_menu","inverse")
+		+nav_item("/") Home
+		+nav_item("/search/", "active") Search
+		+nav_item("/upload/") Upload
+
+	.container
+		+tab-list(["String_Search","Tag_Search","XQuery_Search"],0)
+			+tab("String_Search","active") 
+				.panel.panel-default
+					form(id="searchCriteria", action="", method="get")
+						.input-group
+							input.form-control(id="q",name="searchString", placeholder='Search for String...', type="text")
+							span.input-group-btn
+								button.btn.btn-default(type='submit') Search
+			+tab("Tag_Search")
+				.panel.panel-default
+					form(id="searchCriteria2", action="", method="get")
+						.input-group
+							input.form-control(id="q2",name="searchTag", placeholder='Search for Tag...', type="text")
+							span.input-group-btn
+								button.btn.btn-default(type='submit') Search
+			+tab("XQuery_Search")
+				.panel.panel-default
+					form(id="searchCriteria3", action="", method="get")
+						.input-group
+							input.form-control(id="q3",name="searchXQuery", placeholder='Search for...', type="text")
+							span.input-group-btn
+								button.btn.btn-default(type='submit') Search
+		if files.length > 1
+			a.btn.pull-right(href= "/downloadAll/?search="+downloadPath) Download Results As Zip
+	if files.length > 0
+		.container   
+			+panel-primary("Search Results")
+				if files.length > 1
+					.list-group
+						- var n = pageNum * perPage
+						- var count = 0
+						while n < files.length && count < resultsPerPage
+							- var link = "/s=" + files[n];
+							a.list-group-item(href= link ) !{files[n++]}
+							- count++
+				else
+					p There are no results
+			ul.pagination
+				- var n = pagiRange[0]
+				while n < files.length && n <= pagiRange[1]
+					- linkPage = baseURL + '&page=' + n
+					if n - 1 == pageNum
+						li.active
+							a(href=linkPage) #{n}
+					else
+						li
+							a(href=linkPage) #{n}
+					- n++;
+
+						

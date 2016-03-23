@@ -11,8 +11,8 @@ router.get('/', function(req, res, next) {
     if(error) {
       console.error(error);
     } else{
-      arrayOfLines = result.result.match(/[^\r\n\s]+/g);
-      res.render('index', { title: 'Express', words: arrayOfLines});
+      subDirectories = result.result.match(/[^\r\n\s]+/g);
+      res.render('index', { title: 'Express', words: subDirectories});
     }
   });
 });
