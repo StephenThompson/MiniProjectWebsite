@@ -8,17 +8,66 @@ block body
     +nav_item("/", "active") Home
     +nav_item("/search/") Search
     +nav_item("/upload/") Upload
-    
- 
+
   .container
-    +tab-list(["Text","UML"],0)
-       +tab("Text","active") 
-         +panel-primary(downloadPath)
-           p !{words}
-       +tab("UML")
-         +panel-primary(downloadPath)
-           textarea#comment.form-control(rows= '20')
-             | #{words}
-    a.btn.btn-group(style='float: right;')
-      a.btn.pull-right Edit
-      a.btn.pull-right(href= "/d="+downloadPath) Download
+    container(id="NoEdit")
+      a.btn.pull-right(href= "/downloadDoc/?d=" + downloadPath) Download
+      a.btn.pull-right(id="btnEdit") Edit
+    container(id="inEdit")
+      a.btn.pull-right(id="btnDiscard") Discard Changes
+      a.btn.pull-right(id="btnSave") Save Changes
+  .container
+      +panel-primary(downloadPath)
+        container(id="textLetter")
+          | !{words}
+        textarea.form-control(rows= '17', id="textAreaLetter")
+          | #{words}
+
+  ///////////////////////////////////////////
+  //  Scripts
+  ///////////////////////////////////////////
+  script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js')
+  script.
+    $("#textAreaLetter").hide();
+    $("#inEdit").hide();
+
+    $(document).ready(function () {
+      $("#btnEdit").click(function () {
+        $("#textAreaLetter").show();
+        $("#textLetter").hide();
+        $("#inEdit").show();
+        $("#NoEdit").hide();
+      });
+
+      $("#btnSave").click(function () {
+        if (confirm('Warning: You are about to overwrite the file')) {
+          $("#textAreaLetter").hide();
+          $("#textLetter").show();
+          $("#inEdit").hide();
+          $("#NoEdit").show();
+          document.getElementById("textLetter").innerHTML = document.getElementById("textAreaLetter").value;
+          // http://www.w3schools.com/ajax/ajax_xmlhttprequest_send.asp
+          var xhttp;
+          if (window.XMLHttpRequest) {
+            xhttp = new XMLHttpRequest();
+          } else {
+            // code for IE6, IE5
+            xhttp = new ActiveXObject("Microsoft.XMLHTTP");
+          }
+
+          xhttp.open("POST", "/updateDoc?p=!{downloadPath}&t=" + document.getElementById("textAreaLetter").value, true);
+          xhttp.send();
+
+        }
+      });
+      //http://stackoverflow.com/questions/10919650/accessing-express-js-local-variables-in-client-side-javascript
+      $("#btnDiscard").click(function () {
+        if (confirm('Warning: You are about to lose any changes you have made')) {
+          $("#textAreaLetter").hide();
+          $("#textLetter").show();
+          $("#inEdit").hide();
+          $("#NoEdit").show();
+          document.getElementById("textAreaLetter").value = document.getElementById("textLetter").innerHTML;
+        }
+      });
+    });

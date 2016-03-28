@@ -17,8 +17,8 @@
     "cheerio": "*",
     "eslint": "*",
     "basex": "*",
-	"JSZip": "*",
-	"fs": "*"
+	"multer": "*",
+	"archiver": "*",
   },
   "devDependencies": {
     "eslint-config-standard": "^5.1.0",

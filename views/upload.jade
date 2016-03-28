@@ -7,7 +7,48 @@ block body
   +navbar ("Colenso","dropdown_menu","inverse")
     +nav_item("/") Home
     +nav_item("/search/") Search
-    +nav_item("/", "active") Upload
-    
+    +nav_item("/upload/", "active") Upload
+
   .container
-    a.btn.btn-default Upload
+    if (result == "Success")
+      +panel-success("Upload File")
+        p File uploaded
+    else if (result == "Fail")
+      +panel-danger("Upload File")
+        p Upload failed
+    else
+      +panel-primary("Upload File")
+        span
+          p File Name:
+          input(type="text", id="inputFileName")
+          p Directory:
+          input(type="text", id="inputDirectory")
+          container.pull-right
+            button.btn-default() Choose File
+        textarea.form-control(rows= '17', id="fileBody")
+          | Stuff Goes Here
+        container.pull-right
+          button.btn-default(id="btnUpload") Create New File
+  /////////////////////////////////////////
+  //  Scripts
+  ///////////////////////////////////////////
+  script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js')
+  script.
+   $(document).ready(function () {
+     $("#btnUpload").click(function () {
+       // http://www.w3schools.com/ajax/ajax_xmlhttprequest_send.asp
+       var xhttp;
+       if (window.XMLHttpRequest) {
+         xhttp = new XMLHttpRequest();
+       } else {
+         // code for IE6, IE5
+         xhttp = new ActiveXObject("Microsoft.XMLHTTP");
+       }
+
+       xhttp.open("POST", "/uploadDoc?name=" + document.getElementById("inputFileName").value
+               + "&dir=" + document.getElementById("inputDirectory").value
+               + "&body=" + document.getElementById("fileBody").value, true);
+       xhttp.send();
+       alert("File added");
+     });
+   });
