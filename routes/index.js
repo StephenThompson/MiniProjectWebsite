@@ -1,7 +1,6 @@
 var express = require('express');
 var router = express.Router();
 var archiver = require('archiver');
-var querystring = require("querystring");
 var basex = require('basex');
 var cheerio = require('cheerio')
 var client = new basex.Session("127.0.0.1", 1984, "admin", "admin");
@@ -67,31 +66,55 @@ router.get('/doc/', function(req, res, next) {
  ABC OR 123 - document can contain either "ABC" and "123"
  ABC NOT 123 - document must contain "ABC" but not "123"
 
- Order - NOT, OR, AND
+ Order - NOT, AND, OR
 
  http://stackoverflow.com/questions/14955164/xquery-full-text-search-with-word1-and-not-word2
  */
 function getSubSearch(string){
-    var outString = '("';
-    var spaceSplit = string.split(/\s/g);
-    for (y = 0; y < spaceSplit.length; y++){
-        if (spaceSplit[y] == "NOT"){
-            if (y < spaceSplit.length) {
-                outString += '") ftnot ("';
+    var outString = '(';
+
+    // Deal with AND keyword
+    var ORSplit = string.split(/\s+OR\s+/g);
+    var orString = '';
+    if (ORSplit.length > 1)
+        orString = '(';
+    for (x = 0; x < ORSplit.length; x++){
+        // Deal with AND keyword
+        var ANDSplit = ORSplit[x].split(/\s+AND\s+/g);
+        var andString = '';
+        if (ANDSplit.length > 1)
+            andString = '(';
+        for (y = 0; y < ANDSplit.length; y++){
+            // Deal with NOT keyword
+            var NOTSplit = ANDSplit[y].split(/\s+NOT\s+/g);
+            var notString = '';
+            if (NOTSplit.length > 1)
+                notString = '(';
+            for (z = 0; z < NOTSplit.length; z++){
+                notString += '"' + NOTSplit[z] + '"';
+                if (z < NOTSplit.length - 1){
+                    notString += " ftand ftnot ";
+                }
             }
-        } else if (spaceSplit[y] == "AND"){
-            if (y < spaceSplit.length) {
-                outString += '") ftand ("';
+            if (NOTSplit.length > 1)
+                notString += ')';
+            andString += notString;
+            if (y < ANDSplit.length - 1){
+                andString += " ftand ";
             }
-        } else if (spaceSplit[y] == "OR"){
-            if (y < spaceSplit.length) {
-                outString += '") ftor ("';
-            }
-        } else {
-            outString += spaceSplit[y];
+        }
+        if (ANDSplit.length > 1)
+            andString += ')';
+        orString += andString;
+        if (x < ORSplit.length - 1){
+            orString += " ftor ";
         }
     }
-    outString += '")';
+    if (ORSplit.length > 1)
+        orString += ')';
+    // put everything together
+    outString += orString;
+    outString += ')';
     return outString;
 }
 function getStringFromNestedSearch(pastSearch, currentSearch){
@@ -126,11 +149,6 @@ router.get('/search', function(req, res, next) {
     else {
         // 'blah' ftand 'foo'
         // ftor, ftnot
-        /*
-         client.execute("XQUERY declare namespace tei= 'http://www.tei-c.org/ns/1.0'; " +
-         "for $n in (.//tei:"+path+")\n" +
-         "return db:path($n)",
-         */
         // Need to be easy to do "search 1" AND "search 2" AND "search3"
 
         var stringSearch = getStringFromNestedSearch(pastSearch? pastSearch : "", path? path : "");
@@ -143,8 +161,9 @@ router.get('/search', function(req, res, next) {
         if (path){
             stringNested.push(path);
         }
+        //"for $n in (//tei:p[text() contains text " + stringSearch + "])\n" + tei
         client.execute("XQUERY declare namespace tei= 'http://www.tei-c.org/ns/1.0'; " +
-            "for $n in (//tei:p[text() contains text " + stringSearch + "])\n" +
+            "for $n in (//.[. contains text " + stringSearch + "])\n" +
             "return db:path($n)",
             function(error, result) {
                 if(error) {
@@ -156,26 +175,20 @@ router.get('/search', function(req, res, next) {
                         page = Number(page) - 1;
                     }
 
-                    var subDirectories = result.result.split("\n");
+                    var subDirectories = result.result.match(/[^\r\n]+/g);
                     if (result.result.length == 0){
                         subDirectories = [];
                     }
 
-
                     var fileNames = [];
-                    //console.error("page: " + page);
                     perPage = 50;
 
-                    var downloadAll = "?" + querystring.stringify({files : subDirectories}, '&', '[]=');
-                    console.log("Search " + downloadAll)
                     for (x = 0; x < subDirectories.length; x++){
-                        if (fileNames.indexOf(subDirectories[x]) < 0){
+                        if (fileNames.indexOf(subDirectories[x]) < 0 && subDirectories[x].length > 0){
                             fileNames.push(subDirectories[x]);
-                            //downloadAll += x == 0? "?files[]=" : "&files[]=";
-                            //downloadAll += querystring.parse(subDirectories[x]);
                         }
                     }
-                    console.log(downloadAll);
+                    //console.log(fileNames);
                     totalPages = Math.max(1, Math.ceil((fileNames.length+1)/perPage));
                     paginationStuff = [1, totalPages];
                     /*if (totalPages <= 10)
@@ -191,10 +204,9 @@ router.get('/search', function(req, res, next) {
                         paginationStuff = [Math.max(1, page - 4 - offset), Math.min(fileNames.length / perPage, page + 6 + offset) ];
                     }*/
 
-                    //console.log("pagi: " + (fileNames.length/perPage-1) + "   :   " + paginationStuff + "  :  total Results: " +fileNames.length);
                     url = req.url.replace(/&page=([0-9]+)/g, '');
                     res.render('search', { title: 'Colenso Project', files: fileNames, pageNum: page, resultsPerPage: perPage, baseURL: url, pagiRange: paginationStuff, downloadPath: path, nested: stringNested, 
-                        didSearch: true, downloading: downloadAll});
+                        didSearch: true});
                 }
             });
     }
@@ -214,20 +226,23 @@ router.get('/upload', function(req, res, next) {
 
 // Uploading And Downloading Files Methods
 router.post('/uploadDoc', function(req, res, next) {
-    console.log("Did something");
+    var filename = req.query.name;
+    if (filename.substring(filename.length - 4) != ".xml")
+        filename += ".xml";
+    console.log("REPLACE " + req.query.dir + "/" + req.query.name);
     client.execute("REPLACE " + req.query.dir + "/" + req.query.name + " " + req.query.body,
         function(error, result) {
             if (error) {
                 console.error(error);
             } else {
-                console.log(req.query.p + " updated");
+                console.log(req.query.p + " uploaded");
             }
         });
 });
 
 router.post('/updateDoc', function(req, res, next) {
     client.execute("REPLACE " + req.query.p + " " + req.query.t,
-        function(error, result) {
+        function (error, result) {
             if (error) {
                 console.error(error);
             } else {
@@ -299,4 +314,26 @@ router.get('/downloadAll', function(req, res) {
             }
         });
 });
+
+function validateDoc(document){
+    return true;
+    /*client.execute("xquery "+
+        "try {"
+    "let $doc := <invalid/>
+    "let $schema := '<!ELEMENT root (#PCDATA)>'
+    "return validate:dtd($doc, $schema)
+""} catch bxerr:BXVA0001 {""
+    "'DTD Validation failed.'
+"}"
+    ,
+        function(error, result) {
+            if(error) {
+                console.error("Is not valid:" + error);
+                return false;
+            } else{
+                console.log("Is valid");
+                return true;
+            }
+        });*/
+}
 module.exports = router;
