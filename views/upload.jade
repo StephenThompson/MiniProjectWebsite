@@ -5,10 +5,9 @@ head
 
 block body
   +navbar ("Colenso","dropdown_menu","inverse")
-    +nav_item("/") Home
     +nav_item("/") Browse
     +nav_item("/search/") Search
-    +nav_item("/upload/", "active") Add File
+    +nav_item("/upload/", "active") Upload
 
   .container
     +panel-primary("Add File")
@@ -17,8 +16,8 @@ block body
           input(type="text", id="inputFileName", value="NewFile.xml")
         p Directory:
           input(type="text", id="inputDirectory", value="Directory/SubDir")
-        container.pull-right
-          input(type="file", name="Choose File", id = "btnLoadFile", accept=".xml")
+
+        input(type="file", name="Choose File", id = "btnLoadFile", accept=".xml")
       textarea.form-control(rows= '17', id="fileBody")
         | <TEI xmlns="http://www.tei-c.org/ns/1.0" xml:id="NewFile">
         |   <p>New File</p>
@@ -40,13 +39,38 @@ block body
           // code for IE6, IE5
           xhttp = new ActiveXObject("Microsoft.XMLHTTP");
         }
-        // Should check if filename ends with .xml & directory correct & no spaces
 
-        xhttp.open("POST", "/uploadDoc?name=" + document.getElementById("inputFileName").value
-                + "&dir=" + document.getElementById("inputDirectory").value
-                + "&body=" + document.getElementById("fileBody").value, true);
+        //PrLBrghtn-0001.xml
+        //Broughton/private_letters
+
+        // Get file name
+        var filename = document.getElementById("inputFileName").value;
+        if (filename.substring(filename.length - 4) != ".xml")
+           filename += ".xml";
+
+        // Get Directory name
+        var directory = document.getElementById("inputDirectory").value;
+        if (directory.length > 0 && directory[directory.length - 1] != "/")
+          directory += "/";
+
+        // Check if file already exists
+        /*xhttp.open("POST", "/checkExists?filepath=" + directory + filename, false);
+        xhttp.send();
+
+        var fileExists = xhttp.responseText;
+        var rightFile = true;
+
+        if (fileExists == "true"){
+          rightFile = confirm('Warning: The file already exists in the database! Do you want to overwrite it?')
+        }
+
+        if (rightFile == true) {*/
+          xhttp.open("POST", "/uploadDoc?name=" + filename
+                    + "&dir=" + directory
+                    + "&body=" + document.getElementById("fileBody").value, true);
         xhttp.send();
         alert("File added");
+        // }
       });
 
       // https://www.nczonline.net/blog/2012/05/08/working-with-files-in-javascript-part-1/
@@ -61,13 +85,5 @@ block body
           };
           reader.readAsText(control.files[0]);
         }
-        /*document.getElementById("fileBody").value = "Blah";
-         var reader = new FileReader();
-         reader.onload = function(event) {
-         var contents = event.target.result;
-
-         console.log("File contents: " + contents);
-         document.getElementById("fileBody").value = "Blah";
-         };*/
       });
     });

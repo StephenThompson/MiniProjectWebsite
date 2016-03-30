@@ -5,7 +5,7 @@ head
 
 block body
   +navbar ("Colenso","dropdown_menu","inverse")
-    +nav_item("/", "active") Home
+    +nav_item("/", "active") Browse
     +nav_item("/search/") Search
     +nav_item("/upload/") Upload
 
@@ -60,6 +60,7 @@ block body
 
         }
       });
+
       //http://stackoverflow.com/questions/10919650/accessing-express-js-local-variables-in-client-side-javascript
       $("#btnDiscard").click(function () {
         if (confirm('Warning: You are about to lose any changes you have made')) {

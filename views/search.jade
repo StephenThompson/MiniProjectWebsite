@@ -5,52 +5,112 @@ head
 
 block body
 	+navbar("Colenso","dropdown_menu","inverse")
-		+nav_item("/") Home
+		+nav_item("/") Browse
 		+nav_item("/search/", "active") Search
 		+nav_item("/upload/") Upload
 
 	.container
-		+tab-list(["String_Search","Tag_Search"],0)
-			+tab("String_Search","active") 
+		+tab-list(["Text","XQuery", "Help"],0)
+			+tab("Text","active")
 				.panel.panel-default
 					form(id="searchCriteria", action="", method="get")
 						.input-group
-							input.form-control(id="q",name="searchString", placeholder='Search for String...', type="text")
+							input.form-control(id="q",name="searchString", placeholder='Search for Text...', type="text")
 
-							each word in nested
-								input(name="nested[]",type="hidden", value = word)
+							each word in nestedString
+								input(name="nestedString[]",type="hidden", value = word)
+							each word2 in nestedQuery
+								input(name="nestedQuery[]",type="hidden", value = word2)
 
 							span.input-group-btn
 								button.btn.btn-default(type='submit') Search
-			+tab("Tag_Search")
+			+tab("XQuery")
 				.panel.panel-default
 					form(id="searchCriteria2", action="", method="get")
 						.input-group
-							input.form-control(id="q2",name="searchTag", placeholder='Search for Tag...', type="text")
+							input.form-control(id="q2",name="searchQuery", placeholder='Search for Query...', type="text")
+
+							each word in nestedString
+								input(name="nestedString[]",type="hidden", value = word)
+							each word2 in nestedQuery
+								input(name="nestedQuery[]",type="hidden", value = word2)
+
 							span.input-group-btn
 								button.btn.btn-default(type='submit') Search
+			+tab("Help")
+				p Text searches can be joined by using the key words
+				p OR, AND and NOT, and supports wildcards
 		span
+			// Nested Search Tabs
 			- var i = 0
-			while i < nested.length
+			while i < nestedString.length
 				- var link = ""
 				- j = 0
+				- charQuery = "?";
 				- first = true
-				while j < nested.length
+				while j < nestedString.length
 					if i != j
 						if first
-							- link = link + "?nested[]=" + nested[j]
+							- link = link + charQuery + "nestedString[]=" + nestedString[j]
 							- first = false
+							- charQuery = "&"
 						else
-							- link = link + "&nested[]=" + nested[j]
+							- link = link + charQuery + "nestedString[]=" + nestedString[j]
 					- j++
-				button
-					if (nested.length <= 1)
-						a(href="/search") #{nested[i]} [Remove]
+
+				- k = 0
+				- firstQ = true
+				while k < nestedQuery.length
+					if firstQ
+						- link = link + charQuery + "nestedQuery[]=" + nestedQuery[k]
+						- firstQ = false
+						- charQuery = "&"
 					else
-						a(href=link) #{nested[i]} [Remove]
+						- link = link + charQuery + "nestedQuery[]=" + nestedQuery[k]
+					- k++
+
+				button
+					if (nestedString.length <= 1 && nestedQuery.length <= 1)
+						a(href="/search") #{nestedString[i]} [Remove]
+					else
+						a(href=link) #{nestedString[i]} [Remove]
+				- i++
+			// Nested Query tabs
+			- i = 0
+			while i < nestedQuery.length
+				- var link = ""
+				- j = 0
+				- charQuery = "?";
+				- first = true
+				while j < nestedString.length
+					if first
+						- link = link + charQuery + "nestedString[]=" + nestedString[j]
+						- first = false
+						- charQuery = "&"
+					else
+						- link = link + charQuery + "nestedString[]=" + nestedString[j]
+					- j++
+
+				- k = 0
+				- firstQ = true
+				while k < nestedQuery.length
+					if i != k
+						if firstQ
+							- link = link + charQuery + "nestedQuery[]=" + nestedQuery[k]
+							- firstQ = false
+							- charQuery = "&"
+						else
+							- link = link + charQuery + "nestedQuery[]=" + nestedQuery[k]
+					- k++
+
+				button
+					if (nestedString.length <= 1 && nestedQuery.length <= 1)
+						a(href="/search") #{nestedQuery[i]} [Remove]
+					else
+						a(href=link) #{nestedQuery[i]} [Remove]
 				- i++
 
-		if nested.length > 0
+		if nestedString.length > 0 || nestedQuery.length > 0
 			button
 				a(href="/search") Clear All
 		if files.length > 0
@@ -58,7 +118,11 @@ block body
 				form(action="/downloadAll/", method="get")
 					.input-group.pull-right
 						button(type='submit') Download Results As Zip
-						each word in nested
+						each word in nestedString
+							input(name="nestedString[]",type="hidden", value = word)
+						each word2 in nestedQuery
+							input(name="nestedQuery[]",type="hidden", value = word2)
+						//each word in nested
 							input(name="nested[]",type="hidden", value = word)
 
 
